@@ -1,0 +1,139 @@
+class Banco:
+    def __init__(self, nombre):
+        self.nombre = nombre
+        self.cuentas = []
+
+    def agregar_cuenta(self, cuenta):
+        self.cuentas.append(cuenta)
+
+
+class Cuenta:
+    def __init__(self, numero, saldo, limite_credito, tipo):
+        self.numero = numero
+        self.saldo = saldo
+        self.limite_credito = limite_credito
+        self.tipo = tipo
+
+
+class Cliente:
+    def __init__(self, nombre, direccion, numero_cuenta, contraseña):
+        self.nombre = nombre
+        self.direccion = direccion
+        self.numero_cuenta = numero_cuenta
+        self.contraseña = contraseña
+
+
+class Cajero:
+    def __init__(self, nombre, codigo, banco):
+        self.nombre = nombre
+        self.codigo = codigo
+        self.banco = banco
+
+    def mostrar_menu(self):
+        print("1. Retirada de efectivo")
+        print("2. Ingreso de efectivo")
+        print("3. Pago de facturas")
+        print("4. Transferencia de fondos")
+        print("5. Salir")
+
+    def retirar_efectivo(self, cliente, cantidad):
+        cuenta = self.obtener_cuenta(cliente.numero_cuenta)
+        if cantidad > 0 and cuenta.saldo >= cantidad:
+            cuenta.saldo -= cantidad
+            print(f"Retirada exitosa. Nuevo saldo: {cuenta.saldo}")
+        else:
+            print("Fondos insuficientes o cantidad no válida.")
+
+    def ingresar_efectivo(self, cliente, cantidad):
+        cuenta = self.obtener_cuenta(cliente.numero_cuenta)
+        if cantidad > 0:
+            cuenta.saldo += cantidad
+            print(f"Ingreso exitoso. Nuevo saldo: {cuenta.saldo}")
+        else:
+            print("Cantidad no válida.")
+
+    def pagar_factura(self, cliente, informacion_factura):
+        cuenta = self.obtener_cuenta(cliente.numero_cuenta)
+        
+        print("Factura pagada con éxito.")
+
+    def transferir_fondos(self, cliente, info_destinatario, cantidad):
+        cuenta_origen = self.obtener_cuenta(cliente.numero_cuenta)
+        cuenta_destino = self.obtener_cuenta(info_destinatario["numero_cuenta"])
+        if cantidad > 0 and cuenta_origen.saldo >= cantidad:
+            cuenta_origen.saldo -= cantidad
+            cuenta_destino.saldo += cantidad
+            print("Transferencia exitosa.")
+        else:
+            print("Fondos insuficientes o cantidad no válida.")
+
+    def obtener_cuenta(self, numero_cuenta):
+        for cuenta in self.banco.cuentas:
+            if cuenta.numero == numero_cuenta:
+                return cuenta
+
+
+def main():
+    mi_banco = Banco("herinson bank")
+    cuenta1 = Cuenta(1, 1000, 500, "Corriente")
+    cuenta2 = Cuenta(2, 500, 200, "Ahorro")
+    mi_banco.agregar_cuenta(cuenta1)
+    mi_banco.agregar_cuenta(cuenta2)
+
+    cliente1 = Cliente("Juan", "Calle 123", 1, "pass123")
+    cliente2 = Cliente("Maria", "Calle 456", 2, "pass456")
+
+    cajero_automatico = Cajero("Cajero 1", "1234", mi_banco)
+
+    numero_cuenta = int(input("Ingrese su número de cuenta: "))
+    contraseña = input("Ingrese su contraseña: ")
+
+    cliente_autenticado = None
+    for cuenta in mi_banco.cuentas:
+        if cuenta.numero == numero_cuenta:
+            for cliente in [cliente1, cliente2]:
+                if cliente.numero_cuenta == numero_cuenta and cliente.contraseña == contraseña:
+                    cliente_autenticado = cliente
+                    break
+
+    if cliente_autenticado is not None:
+        print(f"Bienvenido, {cliente_autenticado.nombre}.")
+        print(f"Número de cuenta: {cliente_autenticado.numero_cuenta}")
+        print(f"Saldo: {cajero_automatico.obtener_cuenta(cliente_autenticado.numero_cuenta).saldo}")
+
+        opcion = 0
+        while opcion != 5:
+            cajero_automatico.mostrar_menu()
+            opcion = int(input("Seleccione una opción (1-5): "))
+
+            if opcion == 1:
+                cantidad_retiro = float(input("Ingrese la cantidad a retirar: "))
+                cajero_automatico.retirar_efectivo(cliente_autenticado, cantidad_retiro)
+
+            elif opcion == 2:
+                cantidad_ingreso = float(input("Ingrese la cantidad a ingresar: "))
+                cajero_automatico.ingresar_efectivo(cliente_autenticado, cantidad_ingreso)
+
+            elif opcion == 3:
+                info_factura = input("Ingrese la información de la factura: ")
+                cajero_automatico.pagar_factura(cliente_autenticado, info_factura)
+
+            elif opcion == 4:
+                info_destinatario = {
+                    "numero_cuenta": int(input("Ingrese el número de cuenta del destinatario: "))
+                }
+                cantidad_transferencia = float(input("Ingrese la cantidad a transferir: "))
+                cajero_automatico.transferir_fondos(cliente_autenticado, info_destinatario, cantidad_transferencia)
+
+            elif opcion == 5:
+                print("Gracias por utilizar nuestros servicios.")
+
+            else:
+                print("Opción no válida. Inténtelo de nuevo.")
+
+    else:
+        print("Autenticación fallida. Verifique su número de cuenta y contraseña.")
+
+
+if __name__ == "__main__":
+    main()
